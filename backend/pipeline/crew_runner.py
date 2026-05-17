@@ -79,7 +79,8 @@ def _call_ollama(prompt: str, timeout: int = 180) -> str:
         return ""
     except Exception as e:
         print(f"[Pipeline] Ollama call failed: {e}")
-        import traceback; traceback.print_exc()
+        import traceback
+        traceback.print_exc()
         return ""
 
 
@@ -259,6 +260,12 @@ def _parse_and_validate(raw: str, source_urls: list[str], query: str = "") -> di
     if data is None:
         print("[Pipeline] All JSON strategies failed — extracting values by regex")
         scraped = _extract_numbers_from_text(raw, query)
+        print(f"[Pipeline] Scraped values: {scraped}")
+        if not raw.strip():
+            scraped.update({
+                "summary": "Analysis failed because the local AI model (Ollama) is not running or unreachable.",
+                "reasoning": "Backend connection to Ollama at port 11434 failed. Please ensure Ollama is running and the llama3.2 model is pulled."
+            })
         return _fallback(source_urls, query, overrides=scraped)
 
     return _validate_schema(data, source_urls)
